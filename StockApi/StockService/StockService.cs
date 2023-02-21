@@ -1,6 +1,6 @@
 ﻿namespace StockService
 {
-    public class Class1
+    public class StockService
     {
 
     }
