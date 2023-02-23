@@ -1,4 +1,6 @@
 ﻿using System.Net.Http.Json;
+using System.Text.Json;
+using System.Xml.Linq;
 
 namespace Repositories
 {
@@ -15,15 +17,14 @@ namespace Repositories
         public async Task<double> GetStockPrice(string stockName)
         {
             string apiUrl = $"https://api.twelvedata.com/quote?symbol={stockName}&apikey={API_KEY}";
-
             var response = await _httpClient.GetFromJsonAsync<dynamic>(apiUrl);
 
-            if (response && response.price && response.status == "ok")
+            if (response.TryGetProperty("open", out JsonElement open))
             {
-                return (double)response.price;
+                return Convert.ToDouble(open.GetString());
             }
 
-            throw new Exception($"Failed to get stock price for {stockName}. Status code: {response?.code}");
+            throw new Exception("Action failed");    
         }
     }
 }

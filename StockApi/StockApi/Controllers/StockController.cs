@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 namespace StockApi.Controllers
 {
     [ApiController]
-    [Route("/stock")]
+    [Route("/stocks")]
     public class StockController : ControllerBase
     {
         private readonly ILogger<StockController> _logger;
@@ -18,12 +18,10 @@ namespace StockApi.Controllers
             _stockService = new StockService();
         }
 
-        [HttpGet("price", Name = "GetStockProce")]
-        public async Task<IActionResult> Get([FromBody] dynamic requestBody)
+        [HttpGet("{stockName}/price", Name = "GetStockProce")]
+        public async Task<IActionResult> Get(string stockName)
         {
             var requestId = $"stocks-{Guid.NewGuid().ToString()}";
-
-            string stockName = requestBody.name;
 
             try
             {
@@ -39,9 +37,9 @@ namespace StockApi.Controllers
             }
             catch (Exception exception)
             {
-                _logger.LogError(exception, $"requestId={requestId}, action failed");
+                _logger.LogError(exception, $"requestId={requestId}, {exception.Message}");
              
-                return NotFound();
+                return BadRequest(exception.Message);
             }
         }
     }

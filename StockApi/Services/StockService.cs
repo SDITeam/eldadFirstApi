@@ -17,7 +17,7 @@ namespace Services
             double stockPrice = await _stockRepository.GetStockPrice(symbol);
 
             StockData stockData = new StockData(stockPrice);
-            stockData.timeStamp = DateTime.Now;
+            stockData._timeStamp = DateTime.Now;
 
             return stockData;
         }
