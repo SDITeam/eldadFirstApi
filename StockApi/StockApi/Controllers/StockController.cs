@@ -1,4 +1,7 @@
+using Common;
 using Microsoft.AspNetCore.Mvc;
+using Services;
+using System.Runtime.CompilerServices;
 
 namespace StockApi.Controllers
 {
@@ -6,28 +9,40 @@ namespace StockApi.Controllers
     [Route("/stock")]
     public class StockController : ControllerBase
     {
-        private static readonly string[] Summaries = new[]
-        {
-            "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-        };
-
         private readonly ILogger<StockController> _logger;
+        private readonly StockService _stockService;
 
         public StockController(ILogger<StockController> logger)
         {
             _logger = logger;
+            _stockService = new StockService();
         }
 
-        [HttpGet(Name = "GetWeatherForecast")]
-        public IEnumerable<WeatherForecast> Get()
+        [HttpGet("price", Name = "GetStockProce")]
+        public async Task<IActionResult> Get([FromBody] dynamic requestBody)
         {
-            return Enumerable.Range(1, 5).Select(index => new WeatherForecast
+            var requestId = $"stocks-{Guid.NewGuid().ToString()}";
+
+            string stockName = requestBody.name;
+
+            try
             {
-                Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-                TemperatureC = Random.Shared.Next(-20, 55),
-                Summary = Summaries[Random.Shared.Next(Summaries.Length)]
-            })
-            .ToArray();
+                _logger.LogInformation($"requestId={requestId} ; get stock price for {stockName}");
+
+                StockData stockData = await _stockService.GetStockData(stockName);
+                stockData.requestId = requestId;
+
+                _logger.LogInformation(
+                    $"requestId={requestId} ; successfully got stock price for {stockName}");
+
+                return Ok(stockData);
+            }
+            catch (Exception exception)
+            {
+                _logger.LogError(exception, $"requestId={requestId}, action failed");
+             
+                return NotFound();
+            }
         }
     }
 }
